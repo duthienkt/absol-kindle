@@ -192,6 +192,51 @@
             return fBound;
         };
     })();
+
+    if (!Array.prototype.fill) {
+        Object.defineProperty(Array.prototype, 'fill', {
+            value: function(value) {
+
+                // Steps 1-2.
+                if (this == null) {
+                    throw new TypeError('this is null or not defined');
+                }
+
+                var O = Object(this);
+
+                // Steps 3-5.
+                var len = O.length >>> 0;
+
+                // Steps 6-7.
+                var start = arguments[1];
+                var relativeStart = start >> 0;
+
+                // Step 8.
+                var k = relativeStart < 0 ?
+                    Math.max(len + relativeStart, 0) :
+                    Math.min(relativeStart, len);
+
+                // Steps 9-10.
+                var end = arguments[2];
+                var relativeEnd = end === undefined ?
+                    len : end >> 0;
+
+                // Step 11.
+                var final = relativeEnd < 0 ?
+                    Math.max(len + relativeEnd, 0) :
+                    Math.min(relativeEnd, len);
+
+                // Step 12.
+                while (k < final) {
+                    O[k] = value;
+                    k++;
+                }
+
+                // Step 13.
+                return O;
+            }
+        });
+    }
 }());
 
 
@@ -1161,18 +1206,18 @@ function ElementNS() {
 
 Object.defineProperties(ElementNS.prototype, Object.getOwnPropertyDescriptors(Element.prototype));
 
-ElementNS.prototype.attr = function () {      
+ElementNS.prototype.attr = function() {
     if (arguments.length == 1) {
-        if (typeof (arguments[0]) == 'string') {
+        if (typeof(arguments[0]) == 'string') {
             if (this._azar_extendAttributes[arguments[0]]) {
                 return this._azar_extendAttributes[arguments[0]].get.call(this);
             }
             else
-                return this.getAttributeNS(null,arguments[0]);
+                return this.getAttributeNS(null, arguments[0]);
         }
         else {
             for (var key in arguments[0]) {
-            
+
                 this.attr(key, arguments[0][key]);
             }
         }
@@ -1184,14 +1229,14 @@ ElementNS.prototype.attr = function () {
                     this._azar_extendAttributes[arguments[0]].remove.call(this, arguments[1]);
                 }
                 else
-                    this.removeAttributeNS(null,arguments[0]);
+                    this.removeAttributeNS(null, arguments[0]);
             }
             else {
                 if (this._azar_extendAttributes[arguments[0]]) {
                     this._azar_extendAttributes[arguments[0]].set.call(this, arguments[1]);
                 }
-                else{
-                    this.setAttributeNS(null,arguments[0], arguments[1]);
+                else {
+                    this.setAttributeNS(null, arguments[0], arguments[1]);
                 }
             }
         }
@@ -1506,7 +1551,7 @@ function Svg(option) {
 
 Object.defineProperties(Svg.prototype, Object.getOwnPropertyDescriptors(Dom.prototype));
 
-Svg.prototype.fromCode = function (code) {
+Svg.prototype.fromCode = function(code) {
     code = code.trim();
     var receptacle = document.createElement('div');
     var element;
@@ -1529,7 +1574,7 @@ Svg.prototype.fromCode = function (code) {
 };
 
 
-Svg.prototype.makeNewElement = function (tagName) {
+Svg.prototype.makeNewElement = function(tagName) {
     return document.createElementNS(this.svgNS, tagName);
 };
 
@@ -1537,7 +1582,7 @@ Svg.prototype.makeNewElement = function (tagName) {
  * 
  * @param {Element} element 
  */
-Svg.prototype.attach = function (element) {
+Svg.prototype.attach = function(element) {
     if (typeof element.attr == 'function') return;
     var prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
     Object.defineProperties(element, prototypes);
@@ -1650,7 +1695,7 @@ function Svg(option) {
 
 Object.defineProperties(Svg.prototype, Object.getOwnPropertyDescriptors(Dom.prototype));
 
-Svg.prototype.fromCode = function (code) {
+Svg.prototype.fromCode = function(code) {
     code = code.trim();
     var receptacle = document.createElement('div');
     var element;
@@ -1658,7 +1703,7 @@ Svg.prototype.fromCode = function (code) {
     if (code.startsWith('<svg')) {
         receptacle.innerHTML = code;
         element = receptacle.childNodes[0];
-         prototypes = Object.getOwnPropertyDescriptors(Element.prototype);
+        prototypes = Object.getOwnPropertyDescriptors(Element.prototype);
         Object.defineProperties(element, prototypes);
         Element.call(element);
     }
@@ -1666,7 +1711,7 @@ Svg.prototype.fromCode = function (code) {
         var svgfragment = '<svg  version="1.1" xmlns="http://www.w3.org/2000/svg">' + code + '</svg>';
         receptacle.innerHTML = '' + svgfragment;
         element = receptacle.childNodes[0].childNodes[0];
-         prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
+        prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
         Object.defineProperties(element, prototypes);
         ElementNS.call(element);
     }
@@ -1674,7 +1719,7 @@ Svg.prototype.fromCode = function (code) {
 };
 
 
-Svg.prototype.makeNewElement = function (tagName) {
+Svg.prototype.makeNewElement = function(tagName) {
     return document.createElementNS(this.svgNS, tagName);
 };
 
@@ -1682,7 +1727,7 @@ Svg.prototype.makeNewElement = function (tagName) {
  * 
  * @param {Element} element 
  */
-Svg.prototype.attach = function (element) {
+Svg.prototype.attach = function(element) {
     if (typeof element.attr == 'function') return;
     var prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
     Object.defineProperties(element, prototypes);
