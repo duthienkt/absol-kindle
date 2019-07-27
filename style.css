@@ -1,0 +1,67 @@
+.numnber-keyboar {
+    position: fixed;
+    left: 5px;
+    right: 5px;
+    bottom: 0;
+    visibility: hidden;
+    white-space: nowrap;
+    border: 1px solid black;
+}
+
+.numnber-keyboar.show {
+    visibility: visible;
+}
+
+.numnber-keyboar-bt {
+    display: inline-block;
+    background-color: white;
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.ftable {
+    position: relative;
+}
+
+.ftable-cell {
+    position: absolute;
+}
+
+.sudoku-table,
+.sudoku-sub,
+.sudoku-cell {
+    box-sizing: content-box;
+}
+
+.sudoku-table {
+    border: solid 3px black;
+}
+
+.sudoku-sub {
+    border: solid 2px black;
+    width: 100%;
+    height: 100%;
+
+}
+
+.sudoku-sub.hover,
+.sudoku-cell.hover
+{
+    background-color: #ddd;
+}
+
+.sudoku-cell {
+    border: solid 1px #aaa;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 2em;
+}
+
+.sudoku-cell.selected {
+    background-color: #aaa;
+}
+
+.sudoku-cell.locked {
+    font-weight: bold;
+}
