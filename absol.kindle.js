@@ -1,23 +1,45 @@
-!function (e, n) { "object" == typeof exports && "undefined" != typeof module ? n() : "function" == typeof define && define.amd ? define(n) : n() }(0, function () { "use strict"; function e(e) { var n = this.constructor; return this.then(function (t) { return n.resolve(e()).then(function () { return t }) }, function (t) { return n.resolve(e()).then(function () { return n.reject(t) }) }) } function n() { } function t(e) { if (!(this instanceof t)) throw new TypeError("Promises must be constructed via new"); if ("function" != typeof e) throw new TypeError("not a function"); this._state = 0, this._handled = !1, this._value = undefined, this._deferreds = [], u(e, this) } function o(e, n) { for (; 3 === e._state;)e = e._value; 0 !== e._state ? (e._handled = !0, t._immediateFn(function () { var t = 1 === e._state ? n.onFulfilled : n.onRejected; if (null !== t) { var o; try { o = t(e._value) } catch (f) { return void i(n.promise, f) } r(n.promise, o) } else (1 === e._state ? r : i)(n.promise, e._value) })) : e._deferreds.push(n) } function r(e, n) { try { if (n === e) throw new TypeError("A promise cannot be resolved with itself."); if (n && ("object" == typeof n || "function" == typeof n)) { var o = n.then; if (n instanceof t) return e._state = 3, e._value = n, void f(e); if ("function" == typeof o) return void u(function (e, n) { return function () { e.apply(n, arguments) } }(o, n), e) } e._state = 1, e._value = n, f(e) } catch (r) { i(e, r) } } function i(e, n) { e._state = 2, e._value = n, f(e) } function f(e) { 2 === e._state && 0 === e._deferreds.length && t._immediateFn(function () { e._handled || t._unhandledRejectionFn(e._value) }); for (var n = 0, r = e._deferreds.length; r > n; n++)o(e, e._deferreds[n]); e._deferreds = null } function u(e, n) { var t = !1; try { e(function (e) { t || (t = !0, r(n, e)) }, function (e) { t || (t = !0, i(n, e)) }) } catch (o) { if (t) return; t = !0, i(n, o) } } var c = setTimeout; t.prototype["catch"] = function (e) { return this.then(null, e) }, t.prototype.then = function (e, t) { var r = new this.constructor(n); return o(this, new function (e, n, t) { this.onFulfilled = "function" == typeof e ? e : null, this.onRejected = "function" == typeof n ? n : null, this.promise = t }(e, t, r)), r }, t.prototype["finally"] = e, t.all = function (e) { return new t(function (n, t) { function o(e, f) { try { if (f && ("object" == typeof f || "function" == typeof f)) { var u = f.then; if ("function" == typeof u) return void u.call(f, function (n) { o(e, n) }, t) } r[e] = f, 0 == --i && n(r) } catch (c) { t(c) } } if (!e || "undefined" == typeof e.length) throw new TypeError("Promise.all accepts an array"); var r = Array.prototype.slice.call(e); if (0 === r.length) return n([]); for (var i = r.length, f = 0; r.length > f; f++)o(f, r[f]) }) }, t.resolve = function (e) { return e && "object" == typeof e && e.constructor === t ? e : new t(function (n) { n(e) }) }, t.reject = function (e) { return new t(function (n, t) { t(e) }) }, t.race = function (e) { return new t(function (n, t) { for (var o = 0, r = e.length; r > o; o++)e[o].then(n, t) }) }, t._immediateFn = "function" == typeof setImmediate && function (e) { setImmediate(e) } || function (e) { c(e, 0) }, t._unhandledRejectionFn = function (e) { void 0 !== console && console && console.warn("Possible Unhandled Promise Rejection:", e) }; var l = function () { if ("undefined" != typeof self) return self; if ("undefined" != typeof window) return window; if ("undefined" != typeof global) return global; throw Error("unable to locate global object") }(); "Promise" in l ? l.Promise.prototype["finally"] || (l.Promise.prototype["finally"] = e) : l.Promise = t });
+! function(e, n) { "object" == typeof exports && "undefined" != typeof module ? n() : "function" == typeof define && define.amd ? define(n) : n() }(0, function() { "use strict";
+
+    function e(e) { var n = this.constructor; return this.then(function(t) { return n.resolve(e()).then(function() { return t }) }, function(t) { return n.resolve(e()).then(function() { return n.reject(t) }) }) }
+
+    function n() {}
+
+    function t(e) { if (!(this instanceof t)) throw new TypeError("Promises must be constructed via new"); if ("function" != typeof e) throw new TypeError("not a function");
+        this._state = 0, this._handled = !1, this._value = undefined, this._deferreds = [], u(e, this) }
+
+    function o(e, n) { for (; 3 === e._state;) e = e._value;
+        0 !== e._state ? (e._handled = !0, t._immediateFn(function() { var t = 1 === e._state ? n.onFulfilled : n.onRejected; if (null !== t) { var o; try { o = t(e._value) } catch (f) { return void i(n.promise, f) } r(n.promise, o) } else(1 === e._state ? r : i)(n.promise, e._value) })) : e._deferreds.push(n) }
+
+    function r(e, n) { try { if (n === e) throw new TypeError("A promise cannot be resolved with itself."); if (n && ("object" == typeof n || "function" == typeof n)) { var o = n.then; if (n instanceof t) return e._state = 3, e._value = n, void f(e); if ("function" == typeof o) return void u(function(e, n) { return function() { e.apply(n, arguments) } }(o, n), e) } e._state = 1, e._value = n, f(e) } catch (r) { i(e, r) } }
+
+    function i(e, n) { e._state = 2, e._value = n, f(e) }
+
+    function f(e) { 2 === e._state && 0 === e._deferreds.length && t._immediateFn(function() { e._handled || t._unhandledRejectionFn(e._value) }); for (var n = 0, r = e._deferreds.length; r > n; n++) o(e, e._deferreds[n]);
+        e._deferreds = null }
+
+    function u(e, n) { var t = !1; try { e(function(e) { t || (t = !0, r(n, e)) }, function(e) { t || (t = !0, i(n, e)) }) } catch (o) { if (t) return;
+            t = !0, i(n, o) } } var c = setTimeout;
+    t.prototype["catch"] = function(e) { return this.then(null, e) }, t.prototype.then = function(e, t) { var r = new this.constructor(n); return o(this, new function(e, n, t) { this.onFulfilled = "function" == typeof e ? e : null, this.onRejected = "function" == typeof n ? n : null, this.promise = t }(e, t, r)), r }, t.prototype["finally"] = e, t.all = function(e) { return new t(function(n, t) {
+            function o(e, f) { try { if (f && ("object" == typeof f || "function" == typeof f)) { var u = f.then; if ("function" == typeof u) return void u.call(f, function(n) { o(e, n) }, t) } r[e] = f, 0 == --i && n(r) } catch (c) { t(c) } } if (!e || "undefined" == typeof e.length) throw new TypeError("Promise.all accepts an array"); var r = Array.prototype.slice.call(e); if (0 === r.length) return n([]); for (var i = r.length, f = 0; r.length > f; f++) o(f, r[f]) }) }, t.resolve = function(e) { return e && "object" == typeof e && e.constructor === t ? e : new t(function(n) { n(e) }) }, t.reject = function(e) { return new t(function(n, t) { t(e) }) }, t.race = function(e) { return new t(function(n, t) { for (var o = 0, r = e.length; r > o; o++) e[o].then(n, t) }) }, t._immediateFn = "function" == typeof setImmediate && function(e) { setImmediate(e) } || function(e) { c(e, 0) }, t._unhandledRejectionFn = function(e) { void 0 !== console && console && console.warn("Possible Unhandled Promise Rejection:", e) }; var l = function() { if ("undefined" != typeof self) return self; if ("undefined" != typeof window) return window; if ("undefined" != typeof global) return global; throw Error("unable to locate global object") }(); "Promise" in l ? l.Promise.prototype["finally"] || (l.Promise.prototype["finally"] = e) : l.Promise = t });
 
 
-!(function () {
+!(function() {
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
-            || window[vendors[x] + 'CancelRequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||
+            window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function (callback, element) {
-            var id = window.setTimeout(function () { callback(element); },
+        window.requestAnimationFrame = function(callback, element) {
+            var id = window.setTimeout(function() { callback(element); },
                 1000 / 60);
             return id;
         };
 
     if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function (id) {
+        window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
         };
 }());
@@ -25,7 +47,7 @@
 
 
 //Object
-(function () {
+(function() {
     'use strict';
     var ObjectProto = Object.prototype,
         defineGetter = ObjectProto.__defineGetter__,
@@ -39,9 +61,9 @@
     try {
         if (Object.defineProperty) {
             Object.defineProperty(document.createElement('div'), 'theRandomName', {
-                set: function () { },
-                get: function () { }
-            })
+                set: function() {},
+                get: function() {}
+            });
         }
     }
     catch (error) {
@@ -50,7 +72,7 @@
 
     if ((!supportDom || !Object.defineProperty) && defineGetter && defineSetter && lookupGetter && lookupSetter) {
         var originObjetDefineProperty = Object.defineProperty;
-        Object.defineProperty = function (obj, prop, descriptor) {
+        Object.defineProperty = function(obj, prop, descriptor) {
             if (!originObjetDefineProperty || (typeof obj.nodeType === "number" && typeof obj.nodeName === "string")) {
                 if (arguments.length < 3) { // all arguments required
                     throw new TypeError("Arguments not optional");
@@ -65,7 +87,7 @@
                     }
 
                     if ((hasOwnProp.call(descriptor, "get") ||
-                        hasOwnProp.call(descriptor, "set"))) {
+                            hasOwnProp.call(descriptor, "set"))) {
                         // descriptor has a value prop but accessor already exists
                         throw new TypeError("Cannot specify an accessor and a value");
                     }
@@ -87,7 +109,7 @@
         };
 
         var originObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-        Object.getOwnPropertyDescriptor = function (obj, prop) {
+        Object.getOwnPropertyDescriptor = function(obj, prop) {
             if (!originObjectGetOwnPropertyDescriptor || typeof obj.nodeType === "number" && typeof obj.nodeName === "string") {
                 if (arguments.length < 2) { // all arguments required
                     throw new TypeError("Arguments not optional.");
@@ -96,10 +118,10 @@
                 prop += ""; // convert prop to string
 
                 var descriptor = {
-                    configurable: true,
-                    enumerable: true,
-                    writable: true
-                },
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    },
                     getter = lookupGetter.call(obj, prop),
                     setter = lookupSetter.call(obj, prop);
 
@@ -131,7 +153,7 @@
             }
         };
 
-        Object.getOwnPropertyDescriptors = function (o) {
+        Object.getOwnPropertyDescriptors = function(o) {
             var res = {};
             for (var key in o) {
                 res[key] = Object.getOwnPropertyDescriptor(o, key);
@@ -140,7 +162,7 @@
         };
 
         // polifill is needed because it work on kindle
-        Object.defineProperties = function (obj, props) {
+        Object.defineProperties = function(obj, props) {
             var prop;
             for (prop in props) {
                 if (hasOwnProp.call(props, prop)) {
@@ -153,7 +175,7 @@
 
 
     if (typeof Object.assign != 'function') {
-        Object.assign = function (target, varArgs) {
+        Object.assign = function(target, varArgs) {
             'use strict';
             if (target == null) {
                 throw new TypeError('Cannot convert undefined or null to object');
@@ -182,9 +204,9 @@
 }());
 
 //string
-!(function () {
+!(function() {
     if (!String.prototype.startsWith) {
-        String.prototype.startsWith = function (searchString, position) {
+        String.prototype.startsWith = function(searchString, position) {
             position = position || 0;
             return this.indexOf(searchString, position) === position;
         };
@@ -193,10 +215,10 @@
 
 
 //array
-!(function () {
+!(function() {
     if (!Array.prototype.fill) {
         Object.defineProperty(Array.prototype, 'fill', {
-            value: function (value) {
+            value: function(value) {
 
                 // Steps 1-2.
                 if (this == null) {
@@ -240,7 +262,7 @@
     }
 
     if (!Array.prototype.some) {
-        Array.prototype.some = function (fun /*, thisp */) {
+        Array.prototype.some = function(fun /*, thisp */ ) {
             "use strict";
 
             if (this == null) throw new TypeError();
@@ -264,10 +286,10 @@
 
 
 //function
-!(function () {
+!(function() {
     if (!Function.prototype.bind) {
         var ArrayPrototypeSlice = Array.prototype.slice;
-        Function.prototype.bind = function (otherThis) {
+        Function.prototype.bind = function(otherThis) {
             if (typeof this !== 'function') {
                 // closest thing possible to the ECMAScript 5
                 // internal IsCallable function
@@ -277,8 +299,8 @@
             var baseArgs = ArrayPrototypeSlice.call(arguments, 1),
                 baseArgsLength = baseArgs.length,
                 fToBind = this,
-                fNOP = function () { },
-                fBound = function () {
+                fNOP = function() {},
+                fBound = function() {
                     baseArgs.length = baseArgsLength; // reset to default base arguments
                     baseArgs.push.apply(baseArgs, arguments);
                     return fToBind.apply(
@@ -430,7 +452,7 @@ OOP.inheritCreator = function(parent, child) {
                     var result = childFunction.apply(this, arguments);
                     this.super = _super;
                     return result;
-                }
+                };
             })(parent.prototype[i], child.prototype[i]);
         }
     }
@@ -476,7 +498,7 @@ JSPath.prototype.match = function(element, query) {
         }
     }
     return true;
-}
+};
 
 /**
  * Warning : still fail in some testcase
@@ -848,7 +870,7 @@ EventEmitter.copyEvent = function(event, props) {
         if (typeof result[key] == 'function') {
             result[key] = result[key].bind(event);
         }
-    };
+    }
 
     if (props)
         Object.assign(result, props);
@@ -938,7 +960,7 @@ Element.prototype.attr = function() {
 Element.prototype._azar_styleIndex = function(string) {
     return string.replace(/\-(.)/g, function(full, c) {
         return c.toUpperCase();
-    })
+    });
 };
 
 
@@ -1219,7 +1241,7 @@ Element.prototype.afterAttached = function(frameTimeOut) {
                     }
                 }
             }
-        };
+        }
         setTimeout(trace, 0);
     });
 };
@@ -1413,7 +1435,6 @@ Dom.prototype.create = function(option, isInherited) {
         isInherited = true;
     }
     else if (typeof option == 'string') {
-
         option = option.trim();
         if (option[0] == '<') {
 
@@ -1466,10 +1487,7 @@ Dom.prototype.create = function(option, isInherited) {
             }
         }
     }
-
     this.attach(res);
-
-
     if (property) {
         Object.defineProperties(res, property);
     }
@@ -1511,7 +1529,7 @@ Dom.prototype.install = function(arg0, arg1) {
                 if (typeof(func) == 'function')
                     if (_this.creator[key] != func)
                         _this.creator[key] = func;
-            })
+            });
         }
         else if (typeof(arg0) == 'function') {
             var name = getFunctionName(arg0) || arg0.name;
@@ -1519,7 +1537,7 @@ Dom.prototype.install = function(arg0, arg1) {
                 this.creator[name.toLowerCase()] = arg0;
             }
             else {
-                console.error('No ident name of creator function', arg0)
+                console.error('No ident name of creator function', arg0);
             }
         }
         else if (typeof arg0 == 'object') {
@@ -1529,7 +1547,7 @@ Dom.prototype.install = function(arg0, arg1) {
                 if (typeof(func) == 'function')
                     if (_this.creator[key] != func)
                         _this.creator[key] = func;
-            })
+            });
         }
         else if (arg0 instanceof Array) {
             arg0.forEach(function(func) {
@@ -1593,57 +1611,6 @@ Dom.isDomNode = function(o) {
     );
 };
 
-
-function Svg(option) {
-    Dom.call(this, option);
-    this.defaultTag = 'g';
-    this.svgNS = "http://www.w3.org/2000/svg";
-
-
-    delete this.buidDom;
-    this.buildSvg = this.create.bind(this);
-}
-
-
-Object.defineProperties(Svg.prototype, Object.getOwnPropertyDescriptors(Dom.prototype));
-
-Svg.prototype.fromCode = function(code) {
-    code = code.trim();
-    var receptacle = document.createElement('div');
-    var element;
-    if (code.startsWith('<svg')) {
-        receptacle.innerHTML = code;
-        element = receptacle.childNodes[0];
-        var prototypes = Object.getOwnPropertyDescriptors(Element.prototype);
-        Object.defineProperties(element, prototypes);
-        Element.call(element);
-    }
-    else {
-        var svgfragment = '<svg  version="1.1" xmlns="http://www.w3.org/2000/svg">' + code + '</svg>';
-        receptacle.innerHTML = '' + svgfragment;
-        element = receptacle.childNodes[0].childNodes[0];
-        var prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
-        Object.defineProperties(element, prototypes);
-        ElementNS.call(element);
-    }
-    return element;
-};
-
-
-Svg.prototype.makeNewElement = function(tagName) {
-    return document.createElementNS(this.svgNS, tagName);
-};
-
-/**
- * 
- * @param {Element} element 
- */
-Svg.prototype.attach = function(element) {
-    if (typeof element.attr == 'function') return;
-    var prototypes = Object.getOwnPropertyDescriptors(ElementNS.prototype);
-    Object.defineProperties(element, prototypes);
-    ElementNS.call(element);
-};
 
 
 
@@ -1738,6 +1705,29 @@ Dom.getScreenSize = function() {
 };
 
 
+Dom.waitImageLoaded = function(img) {
+    var isLoaded = true;
+    if (!img.complete) {
+        isLoaded = false;
+    }
+    if (img.naturalWidth === 0) {
+        isLoaded = false;
+    }
+    if (isLoaded) return Promise.resolve();
+    return new Promise(function(rs) {
+        img.onload = function() {
+            rs();
+        };
+        setTimeout(5000, rs);
+    });
+    // No other way of checking: assume it’s ok.
+};
+
+
+
+Dom.ShareInstance = new Dom();
+
+
 function Svg(option) {
     Dom.call(this, option);
     this.defaultTag = 'g';
@@ -1789,3 +1779,5 @@ Svg.prototype.attach = function(element) {
     Object.defineProperties(element, prototypes);
     ElementNS.call(element);
 };
+
+Svg.ShareInstance = new Svg();
