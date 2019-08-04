@@ -889,6 +889,7 @@ EventEmitter.eventProperties = ["altKey", "bubbles", "button", "buttons", "cance
 
 function Element() {
     EventEmitter.call(this);
+    if (!this.remove) this.remove = this.selfRemove;
     this._azar_extendAttributes = this._azar_extendAttributes || {};
 }
 
@@ -1728,6 +1729,73 @@ Dom.waitImageLoaded = function(img) {
 Dom.ShareInstance = new Dom();
 
 
+
+Dom.lastResizeTime = 0;
+
+Dom.ResizeSystemElts = [];
+
+Dom.ResizeSystemCacheElts = undefined;
+
+Dom.removeResizeSystemTrash = function () {
+    Dom.ResizeSystemElts = Dom.ResizeSystemElts.filter(function (element) {
+        return Element.prototype.isDescendantOf.call(element, document.body);
+    });
+};
+
+Dom.addToResizeSystem = function (element) {
+    for (var i = 0; i < Dom.ResizeSystemElts.length; ++i)
+        if (Element.prototype.isDescendantOf.call(element, Dom.ResizeSystemElts[i])) {
+            return false;
+        }
+    Dom.ResizeSystemElts = Dom.ResizeSystemElts.filter(function (e) {
+        return !Element.prototype.isDescendantOf.call(e, element);
+    });
+    Dom.ResizeSystemElts.push(element);
+    return true;
+};
+
+Dom.updateResizeSystem = function () {
+    var now = new Date().getTime();
+    if (now - 100 > Dom.lastResizeTime) {
+        Dom.removeResizeSystemTrash();
+        Dom.ResizeSystemCacheElts = undefined;
+    }
+
+    Dom.lastResizeTime = now;
+    function visitor(child) {
+
+        if (typeof child.requestUpdateSize == 'function') {
+            child.requestUpdateSize();
+            return true;
+        }
+        else if (typeof child.updateSize == 'function') {
+            child.updateSize();
+            return true;
+        }
+        else if (typeof child.onresize == 'function') {
+            child.onresize();
+            return true;
+        }
+    }
+    if (Dom.ResizeSystemCacheElts === undefined) {
+        Dom.ResizeSystemCacheElts = [];
+        Dom.ResizeSystemElts.forEach(function (e) {
+            Dom.ShareInstance.$('', e, function (child) {
+                if (visitor(child))
+                    Dom.ResizeSystemCacheElts.push(child);
+            });
+        });
+
+    }
+    else {
+        Dom.ResizeSystemCacheElts.forEach(visitor);
+    }
+};
+
+window.addEventListener('resize', Dom.updateResizeSystem);
+
+
+
 function Svg(option) {
     Dom.call(this, option);
     this.defaultTag = 'g';
@@ -1781,3 +1849,393 @@ Svg.prototype.attach = function(element) {
 };
 
 Svg.ShareInstance = new Svg();
+
+
+/********   XHR.js **************************/
+
+var XHR = {};
+
+
+XHR.makeHttpObject = function () {
+    try {
+        return new XMLHttpRequest();
+    }
+    catch (error) { }
+    try {
+        return new ActiveXObject("Msxml2.XMLHTTP");
+    }
+    catch (error) { }
+    try {
+        return new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    catch (error) { }
+
+    throw new Error("Could not create HTTP request object.");
+};
+
+/***
+ * 
+ * @param {String} url
+ * @param {String} body
+ * @param {String} responseType
+ * @param {Function} success
+ * @param {Function} failure
+ * @returns {Promise}
+ */
+XHR.getRequest = function (url, props, success, failure) {
+    return new Promise(function (rs, rj) {
+        var request = XHR.makeHttpObject();
+        request.open("GET", url, true);
+        if (typeof props == 'string')
+            request.responseType = props || '';
+        else if (props && (typeof props == 'object')) {
+            Object.assign(request, props);
+        }
+        request.send(null);
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    var response = request.response;
+                    success && success(response);
+                    rs(response);
+                }
+                else {
+                    failure && failure(request.status, request.statusText);
+                    rj(request.status);
+                }
+            }
+        };
+
+        request.onerror = function () {
+            rj(new Error("Network Error!"));
+        };
+    });
+};
+
+
+XHR.postRepquest = function (url, bodyJson, props, success, failure) {
+    return new Promise(function (rs, rj) {
+        var method = "POST";
+        var shouldBeAsync = true;
+
+        var request = new XMLHttpRequest();
+
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    success && success(request.response);
+                    rs(request.response);
+                }
+                else if (failure) {
+                    failure && failure(request.status, request.statusText);
+                    rj({ status: request.status, statusText: request.statusText });
+                }
+            }
+        };
+
+        request.onerror = function () {
+            var error = new Error("Network Error!");
+            if (failure) failure(error);
+            rj(error);
+        };
+
+        request.open(method, url, shouldBeAsync);
+        if (typeof props == 'string')
+            request.responseType = props || '';
+        else if (props && (typeof props == 'object')) {
+            Object.assign(request, props);
+        }
+
+        request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        request.send(JSON.stringify(bodyJson));
+    });
+};
+
+
+
+function setCookie(cname, cvalue, exdays) {
+    exdays = exdays || 3600;
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+
+/*************  AppPattern.js ****************************************/
+
+function ContextManager(){
+    this.__contextData__ = {};
+}
+
+/**
+ * @param {String} key
+ * @returns {*}
+ */
+ContextManager.prototype.get = function(key){
+    return this.__contextData__[key];
+};
+
+
+/**
+ * @param {String} key
+ * @param {*} value
+ * @returns {Context}
+ */
+ContextManager.prototype.set = function(key, value){
+    this.__contextData__[key] = value;
+    return this;
+};
+
+ContextManager.prototype.assign = function(obj){
+    Object.assign(this.__contextData__, obj);
+    return this;
+};
+
+ContextManager.prototype.remove = function(key){
+    delete this.__contextData__[key];
+    return this;
+};
+
+ContextManager.prototype.contains = function(key){
+    return  (key in this.__contextData__);
+};
+
+
+function Context (){
+    this.state = "CREATE";
+    /**
+     * @type {Context}
+     */
+    this.parent = null;
+    this.children = [];
+}
+
+Context.prototype.appendChild = function(){
+    for (var i = 0; i < arguments.length; ++i){
+        this.children.push(arguments[i]);
+    }
+};
+
+Context.prototype.removeChild = function(child){
+    var temp = this.children;
+    this.children = [];
+    for (var i = 0; i< this.children.length; ++i){
+        if (temp[i] == child){
+        }
+        else{
+            this.children.push(temp[i]);
+        }
+    }
+};
+
+Context.prototype.getView = function () {
+    throw new Error("Not Implement!");
+};
+
+
+/**
+ * @returns {*}
+ */
+Context.prototype.getContext = function(key){
+    return this.parent.getContextManager().get(key);
+};
+
+/**
+ * @returns {ContextManager}
+ */
+Context.prototype.getContextManager = function(){
+    return this.parent.getContextManager();
+};
+
+/**
+ * @param {Application} 
+ */
+Context.prototype.attach = function (parent) {
+    //stop before attach to new context
+    this.stop();
+    /**
+     * @type {Application}
+     */
+    this.parent = parent;
+    this.state = "ATTACHED";
+    this.onAttached && this.onAttached();
+};
+
+Context.prototype.detach = function () {
+    this.stop();
+    this.state = "DETACHED";
+    this.onDetached && this.onDetached();
+    this.parent = null;
+};
+
+Context.prototype.pause = function () {
+    if (this.state.match(/RUNNING/)) {
+        this.state = "PAUSE";
+        this.onPause && this.onPause();
+    }
+    else {
+        console.warn(this, "NOT RUNNING");
+    }
+};
+Context.prototype.resume = function () {
+    if (!this.state.match(/STANDBY||PAUSE/)) {
+        console.error(this, 'NOT READY!');
+        return;
+    }
+    this.state = "RUNNING";
+    this.onResume && this.onResume();
+};
+
+Context.prototype.start = function () {
+    if (this.state.match(/DIE/)) {
+        console.error(this, 'DIED!');
+        return;
+    }
+
+    if (this.state.match(/RUNNING/)) return;
+
+    if (this.state.match(/STOP|CREATE|ATTACHED/)) {
+        this.state = "STANDBY";
+        this.onStart && this.onStart();
+    }
+    if (this.state.match(/STANDBY|PAUSE/)) {
+        this.resume();
+    }
+};
+
+Context.prototype.stop = function () {
+    if (this.state.match(/STOP|DIE|CREATE|ATTACHED|DETACHED/)) return;
+    if (this.state.match(/RUNNING/)) this.pause();
+    this.state = "STOP";
+    this.onStop && this.onStop();
+};
+
+Context.prototype.destroy = function () {
+    if (this.state.match(/DIE/)) return;
+    if (!this.state.match(/RUNNING||PAUSE/)) this.stop();
+    this.state = "DIE";
+    this.onDestroy && this.onDestroy();
+};
+
+
+
+/**
+ * @class
+ */
+function Application() {
+    Context.call(this);
+    this.activityStack = [];
+    /** @type {Activity} */
+    this.currentActivity = null;
+    this.contextManager = new ContextManager();
+}
+
+Object.defineProperties(Application.prototype, Object.getOwnPropertyDescriptors(Context.prototype));
+Application.prototype.constructor = Application;
+
+Application.prototype.getContextManager = function () {
+
+    return this.contextManager;
+};
+
+/**
+ * @param {Activity} activity
+ */
+Application.prototype.startActivity = function (activity) {
+    if (this.currentActivity != null) {
+        this.currentActivity.pause();
+        this.activityStack.push(this.currentActivity);
+    }
+    this.currentActivity = activity;
+    this.appendChild(activity);
+    activity.attach(this);
+    this.setContentView(activity.getView(), true);
+    activity.start();
+};
+
+/**
+ * @param {Activity} activity
+ */
+Application.prototype.stopActivity = function (activity) {
+    if (this.currentActivity == activity) {
+        if (this.activityStack.length == 0) {
+            //todo
+        }
+        else {
+            activity.detach();
+            this.removeChild(this.currentActivity);
+            this.currentActivity = this.activityStack.pop();
+            this.setContentView(this.currentActivity.getView());
+            this.currentActivity.resume();
+        }
+    }
+    else {
+        console.error("NOT ON TOP ACTIVITY");
+    }
+};
+
+/**
+ * @param {HTMLElement} view
+ */
+Application.prototype.setContentView = function (view, overlay) {
+    throw new Error("Not Implement!");
+};
+
+Application.prototype.backToTopActivity = function () {
+    while (this.activityStack.length > 0) {
+        this.currentActivity.stop();
+        this.currentActivity = this.activityStack.pop();
+    }
+    this.setContentView(this.currentActivity.getView());
+    this.currentActivity.resume();
+}; 
+
+
+
+//NOTE: !impotant : don't make setter, getter for activity, just code like JAVA
+/** 
+ * @class
+ */
+function Activity() {
+    Context.call(this);
+}
+
+
+Object.defineProperties(Activity.prototype, Object.getOwnPropertyDescriptors(Context.prototype));
+Activity.prototype.constructor = Activity;
+
+
+Activity.prototype.startActivity = function (activity) {
+    if (this.parent) {
+        this.parent.startActivity(activity);
+    }
+    else {
+    }
+};
+
+Activity.prototype.finish = function () {
+    if (this.parent) {
+        this.parent.stopActivity(this);
+    }
+    else {
+
+    }
+};
