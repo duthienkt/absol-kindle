@@ -7,7 +7,7 @@
         class: 'debug-space-holder',
         child: [{
             class: 'debug-space',
-            
+
             child: [
                 '.debug-space-trigger',
                 '.debug-space-content'
@@ -28,31 +28,67 @@
 
     var content = $('.debug-space-content', debugSpace);
 
+    function logObject(o) {
+        if (o === undefined) return 'undefined';
+        if (o === null) return 'null';
+        if (typeof o === 'string') return o;
+        if (typeof o === 'number') return o + '';
+        if (Dom.isDomNode(o)) {
+            return JSON.stringify({
+                tagName: o.tagName,
+                className: o.getAttribute && o.getAttribute('class'),
+                style: o.getAttribute && o.getAttribute('style')
+            });
+        }
+        else if (o instanceof Array) {
+            return JSON.stringify(o);
+        }
+        else if (typeof x == 'function') {
+            return x + '';
+        }
 
-    function Log(tag, message) {
-        if (typeof message == 'object') {
-            message = JSON.stringify(message);
+        var x = Object({}, o);
+        ['stack', 'name', 'message'].forEach(function(key) {
+            if (o[key] !== undefined) x[key] = o[key]; //native property
+        });
+        return JSON.stringify(o);
+    }
+
+    function Log(tag) {
+
+        var children = [{
+            tag: 'strong',
+            child: { text: tag }
+        }];
+
+        for (var i = 1; i < arguments.length; ++i) {
+            children.push({
+                tag: 'span',
+                style: {
+                    'margin-left': '1em'
+                },
+                child: { text: logObject(arguments[i]) }
+            });
         }
         content.addChild(_({
             tag: 'p',
-            child: [{
-                    tag: 'strong',
-                    child: { text: tag + ' ' }
-                },
-                {
-                    tag: 'span',
-                    child: { text: message+'' }
-                }
-            ]
+            child: children
         }));
-        
+
         content.scrollTop = content.scrollHeight - content.clientHeight;
 
     }
 
-    console.error = function(obj) {
-        Log('error', obj);
-    };
     window.Log = Log;
+
+    console.error = function() {
+        var args = ['ERROR'].concat(Array.prototype.map.call(arguments, function(x) { return x; }));
+        Log.apply(null, args);
+    };
+
+    console.log = function() {
+        var args = ['LOG'].concat(Array.prototype.map.call(arguments, function(x) { return x; }));
+        Log.apply(null, args);
+    };
 
 })();

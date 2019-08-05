@@ -7,13 +7,14 @@ var $ = core.$;
 
 
 function BlinkButton() {
-    return _('button.blink-btn')
-    /*.on('mousedown', function() {
+    return _('button.blink-btn').defineEvent('click')
+    .on('mousedown', function(event) {
             this.addClass('active');
-            setTimeout(function() {
+            setTimeout(function(){
                 this.removeClass('active');
+                this.emit('click', event, this);
             }.bind(this), 100);
-        })*/
+        })
     ;
 }
 
@@ -96,7 +97,7 @@ function YesNoConfirm() {
         res.emit('pressyes', event, res);
     });
     res.$noBtn = $('blinkbutton.no', res).on('click', function(event) {
-        // res.emit('pressno', event, res);
+        res.emit('pressno', event, res);
     });
     return res;
 }
@@ -123,20 +124,18 @@ YesNoConfirm.show = function(text) {
     YesNoConfirm.mInstance.text = text;
     return new Promise(function(rs) {
         function onYes() {
-            
             finish(true);
         }
 
         function onNo() {
-            // finish(false)
+            finish(false);
         }
 
         function finish(result) {
-            // YesNoConfirm.mInstance.off('pressyes', onYes);
-            // YesNoConfirm.mInstance.off('pressno', onNo);
-            // rs(result);
-            Log("elt", YesNoConfirm.mInstance.selfRemove());
-            // YesNoConfirm.mInstance.remove();
+            YesNoConfirm.mInstance.off('pressyes', onYes);
+            YesNoConfirm.mInstance.off('pressno', onNo);
+            YesNoConfirm.mInstance.remove();
+            rs(result);
         }
         YesNoConfirm.mInstance.on('pressyes', onYes);
         YesNoConfirm.mInstance.on('pressno', onNo);
@@ -242,3 +241,5 @@ LoadingModal.close = function(token) {
         LoadingModal.mInstance.remove();
     }
 };
+
+// LoadingModal.show();
